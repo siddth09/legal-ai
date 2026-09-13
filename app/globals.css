@@ -1,0 +1,139 @@
+@import "tailwindcss";
+
+:root {
+  --background: #020817;
+  --foreground: #e2e8f0;
+  --primary: #3b82f6;
+  --primary-dark: #1d4ed8;
+  --accent: #8b5cf6;
+  --card: #0f172a;
+  --border: rgba(51, 65, 85, 0.6);
+  --muted: #475569;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+/* Gradient mesh background */
+.bg-mesh {
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 130, 246, 0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 60%);
+}
+
+/* Glass card */
+.glass {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Animated gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #60a5fa 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 4s linear infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Pulse glow for upload areas */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.1); }
+  50% { box-shadow: 0 0 20px 4px rgba(59, 130, 246, 0.15); }
+}
+
+.upload-zone {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+/* Smooth transitions everywhere */
+* {
+  transition-property: color, background-color, border-color, opacity, box-shadow, transform;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Focus styles for accessibility */
+:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Loading spinner */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Fade-in for results */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in {
+  animation: fadeInUp 0.35s ease-out forwards;
+}
+
+/* Badge variants */
+.badge-high    { @apply text-red-400 bg-red-950/40 border border-red-800/60 rounded-full px-2.5 py-0.5 text-xs font-semibold; }
+.badge-medium  { @apply text-amber-400 bg-amber-950/40 border border-amber-800/60 rounded-full px-2.5 py-0.5 text-xs font-semibold; }
+.badge-low     { @apply text-emerald-400 bg-emerald-950/40 border border-emerald-800/60 rounded-full px-2.5 py-0.5 text-xs font-semibold; }
+.badge-neutral { @apply text-slate-400 bg-slate-800/40 border border-slate-700/60 rounded-full px-2.5 py-0.5 text-xs font-semibold; }
+
+/* Tab active state */
+.tab-active {
+  @apply bg-blue-600/20 text-blue-400 border-b-2 border-blue-500;
+}
+
+/* Typing cursor blink */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.cursor-blink::after {
+  content: "|";
+  animation: blink 1s step-start infinite;
+  margin-left: 1px;
+}
