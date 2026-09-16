@@ -118,7 +118,7 @@ export default function ComparePage() {
         )}
 
         {/* Results */}
-        {status === "success" && comparison && (
+        {status === "success" && !!comparison && (
           <div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
               <p style={{ fontSize: 13, fontWeight: 600, color: "#34d399" }}>✅ Comparison complete</p>

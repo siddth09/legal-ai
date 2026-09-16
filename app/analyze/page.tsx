@@ -134,7 +134,7 @@ export default function AnalyzePage() {
         )}
 
         {/* Results */}
-        {status === "success" && analysis && (
+        {status === "success" && !!analysis && (
           <div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
               <p style={{ fontSize: 13, fontWeight: 600, color: "#34d399" }}>✅ Analysis complete</p>
