@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 "use client";
 
 import { useState } from "react";
@@ -26,8 +24,7 @@ interface AnalysisData {
 }
 
 interface AnalysisResultProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  analysis: Record<string, any>;
+  analysis: AnalysisData;
 }
 
 type Tab = "overview" | "clauses" | "obligations" | "lawyer";
@@ -37,9 +34,9 @@ export default function AnalysisResult({ analysis }: AnalysisResultProps) {
   const [copied, setCopied] = useState(false);
 
   const riskCounts = {
-    high: analysis.clauses.filter((c) => c.risk === "high").length,
+    high:   analysis.clauses.filter((c) => c.risk === "high").length,
     medium: analysis.clauses.filter((c) => c.risk === "medium").length,
-    low: analysis.clauses.filter((c) => c.risk === "low").length,
+    low:    analysis.clauses.filter((c) => c.risk === "low").length,
   };
 
   const copyChecklist = async () => {
@@ -50,48 +47,58 @@ export default function AnalysisResult({ analysis }: AnalysisResultProps) {
   };
 
   const tabs: { id: Tab; label: string; count?: number }[] = [
-    { id: "overview", label: "Overview" },
-    { id: "clauses", label: "Clauses", count: analysis.clauses.length },
+    { id: "overview",    label: "Overview" },
+    { id: "clauses",     label: "Clauses",     count: analysis.clauses.length },
     { id: "obligations", label: "Obligations" },
-    { id: "lawyer", label: "Lawyer Prep" },
+    { id: "lawyer",      label: "Lawyer Prep" },
   ];
 
   return (
-    <div className="space-y-6 fade-in" role="region" aria-label="Document analysis results">
-      {/* Header */}
-      <div className="glass rounded-2xl p-6">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center flex-shrink-0 shadow-lg">
-            <Scale size={22} className="text-white" aria-hidden="true" />
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }} className="fade-in" role="region" aria-label="Document analysis results">
+
+      {/* Header card */}
+      <div className="card" style={{ padding: 20 }}>
+        <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+          <div style={{
+            width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+            background: "linear-gradient(135deg, #3b82f6, #7c3aed)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 4px 16px rgba(59,130,246,0.25)",
+          }}>
+            <Scale size={20} color="#fff" aria-hidden="true" />
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <h2 className="font-bold text-lg text-slate-100">{analysis.documentType}</h2>
-            </div>
-            <p className="text-slate-400 text-sm leading-relaxed">{analysis.summary}</p>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 6, color: "var(--text-primary)" }}>
+              {analysis.documentType}
+            </h2>
+            <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.65 }}>{analysis.summary}</p>
           </div>
         </div>
 
         {/* Risk summary */}
-        <div className="grid grid-cols-3 gap-3 mt-5" role="list" aria-label="Risk summary">
-          {([["high", "High Risk"], ["medium", "Med Risk"], ["low", "Low Risk"]] as const).map(([level, label]) => (
-            <div key={level} className="rounded-lg bg-slate-800/60 p-3 text-center" role="listitem">
-              <div className={`text-2xl font-bold ${level === "high" ? "text-red-400" : level === "medium" ? "text-amber-400" : "text-emerald-400"}`}>
-                {riskCounts[level]}
-              </div>
-              <div className="text-xs text-slate-500 mt-0.5">{label}</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, marginTop: 16 }} role="list" aria-label="Risk summary">
+          {([["high", "High Risk", "#f87171"], ["medium", "Med Risk", "#fbbf24"], ["low", "Low Risk", "#34d399"]] as const).map(([level, label, color]) => (
+            <div key={level} style={{
+              borderRadius: 10, background: "rgba(255,255,255,0.03)",
+              border: "1px solid var(--border)", padding: "10px 12px", textAlign: "center"
+            }} role="listitem">
+              <div style={{ fontSize: 22, fontWeight: 800, color }}>{riskCounts[level]}</div>
+              <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>{label}</div>
             </div>
           ))}
         </div>
 
         {/* Parties */}
         {analysis.parties?.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-slate-700/50">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Parties</p>
-            <div className="flex flex-wrap gap-2">
+          <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--border)" }}>
+            <p className="section-label" style={{ marginBottom: 8 }}>Parties</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {analysis.parties.map((p, i) => (
-                <span key={i} className="text-xs bg-slate-800 border border-slate-700 rounded-full px-3 py-1 text-slate-300">
-                  <span className="text-blue-400">{p.role}:</span> {p.name}
+                <span key={i} style={{
+                  fontSize: 12, background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)",
+                  borderRadius: 99, padding: "3px 12px", color: "var(--text-secondary)"
+                }}>
+                  <span style={{ color: "#60a5fa" }}>{p.role}:</span> {p.name}
                 </span>
               ))}
             </div>
@@ -100,12 +107,17 @@ export default function AnalysisResult({ analysis }: AnalysisResultProps) {
 
         {/* Red flags */}
         {analysis.redFlags?.length > 0 && (
-          <div className="mt-4 p-3 rounded-xl bg-red-950/20 border border-red-800/40" role="alert">
-            <p className="text-xs font-semibold text-red-400 mb-2">⚠️ Red Flags ({analysis.redFlags.length})</p>
-            <ul className="space-y-1" aria-label="Red flags list">
+          <div style={{
+            marginTop: 14, padding: "12px 14px", borderRadius: 10,
+            background: "rgba(248,113,113,0.07)", border: "1px solid rgba(248,113,113,0.2)"
+          }} role="alert">
+            <p style={{ fontSize: 12, fontWeight: 700, color: "#f87171", marginBottom: 8 }}>
+              ⚠️ Red Flags ({analysis.redFlags.length})
+            </p>
+            <ul style={{ display: "flex", flexDirection: "column", gap: 4 }} aria-label="Red flags list">
               {analysis.redFlags.map((flag, i) => (
-                <li key={i} className="text-xs text-red-300 flex gap-2">
-                  <span aria-hidden="true" className="flex-shrink-0">•</span>
+                <li key={i} style={{ fontSize: 12, color: "#fca5a5", display: "flex", gap: 8 }}>
+                  <span aria-hidden="true" style={{ flexShrink: 0 }}>•</span>
                   {flag}
                 </li>
               ))}
@@ -114,8 +126,8 @@ export default function AnalysisResult({ analysis }: AnalysisResultProps) {
         )}
       </div>
 
-      {/* Tabs */}
-      <div role="tablist" aria-label="Analysis sections" className="flex gap-1 glass rounded-xl p-1">
+      {/* Tab strip */}
+      <div className="tab-strip" role="tablist" aria-label="Analysis sections">
         {tabs.map((t) => (
           <button
             key={t.id}
@@ -124,33 +136,34 @@ export default function AnalysisResult({ analysis }: AnalysisResultProps) {
             id={`tab-${t.id}`}
             aria-controls={`panel-${t.id}`}
             onClick={() => setTab(t.id)}
-            className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-all ${
-              tab === t.id
-                ? "bg-blue-600/20 text-blue-400 shadow-sm"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
+            className={`tab-btn${tab === t.id ? " active" : ""}`}
           >
             {t.label}
             {t.count !== undefined && (
-              <span className="ml-1 opacity-60">({t.count})</span>
+              <span style={{ marginLeft: 4, opacity: 0.6 }}>({t.count})</span>
             )}
           </button>
         ))}
       </div>
 
-      {/* Tab panels */}
+      {/* Panels */}
       <div id={`panel-${tab}`} role="tabpanel" aria-labelledby={`tab-${tab}`}>
+
         {tab === "overview" && (
-          <div className="space-y-4">
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {/* Key dates */}
             {analysis.keyDates?.length > 0 && (
-              <div className="glass rounded-xl p-4">
-                <h3 className="text-sm font-semibold text-slate-300 mb-3">📅 Key Dates</h3>
-                <div className="space-y-2">
+              <div className="card" style={{ padding: "14px 16px" }}>
+                <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>📅 Key Dates</h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
                   {analysis.keyDates.map((d, i) => (
-                    <div key={i} className="flex justify-between items-center text-sm py-1.5 border-b border-slate-800/60 last:border-0">
-                      <span className="text-slate-400">{d.label}</span>
-                      <span className="text-slate-200 font-medium">{d.date}</span>
+                    <div key={i} style={{
+                      display: "flex", justifyContent: "space-between", alignItems: "center",
+                      fontSize: 13, padding: "8px 0",
+                      borderBottom: i < analysis.keyDates.length - 1 ? "1px solid var(--border)" : "none"
+                    }}>
+                      <span style={{ color: "var(--text-secondary)" }}>{d.label}</span>
+                      <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{d.date}</span>
                     </div>
                   ))}
                 </div>
@@ -158,34 +171,37 @@ export default function AnalysisResult({ analysis }: AnalysisResultProps) {
             )}
 
             {/* Checklist */}
-            <div className="glass rounded-xl p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
-                  <CheckSquare size={15} aria-hidden="true" /> Next Steps Checklist
+            <div className="card" style={{ padding: "14px 16px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <h3 style={{ fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
+                  <CheckSquare size={14} aria-hidden="true" style={{ color: "#60a5fa" }} />
+                  Next Steps Checklist
                 </h3>
                 <button
                   onClick={copyChecklist}
-                  className="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1 transition-colors"
+                  className="btn-ghost"
+                  style={{ fontSize: 12 }}
                   aria-label={copied ? "Copied!" : "Copy checklist to clipboard"}
                 >
-                  {copied ? <Check size={13} className="text-emerald-400" aria-hidden="true" /> : <Copy size={13} aria-hidden="true" />}
-                  {copied ? "Copied!" : "Copy"}
+                  {copied
+                    ? <><Check size={12} style={{ color: "#34d399" }} aria-hidden="true" /> Copied!</>
+                    : <><Copy size={12} aria-hidden="true" /> Copy</>}
                 </button>
               </div>
-              <ul className="space-y-2" aria-label="Action checklist">
+              <ol style={{ display: "flex", flexDirection: "column", gap: 10, listStyle: "none", padding: 0, margin: 0 }} aria-label="Action checklist">
                 {analysis.checklist.map((item, i) => (
-                  <li key={i} className="flex gap-2 text-sm text-slate-300">
-                    <span className="text-blue-500 flex-shrink-0 font-bold text-xs mt-0.5">{i + 1}.</span>
+                  <li key={i} style={{ display: "flex", gap: 10, fontSize: 13, color: "var(--text-secondary)" }}>
+                    <span style={{ color: "#60a5fa", fontWeight: 700, fontSize: 11, marginTop: 2, flexShrink: 0 }}>{i + 1}.</span>
                     {item}
                   </li>
                 ))}
-              </ul>
+              </ol>
             </div>
           </div>
         )}
 
         {tab === "clauses" && (
-          <div className="space-y-2">
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {analysis.clauses.map((clause, i) => (
               <ClauseCard key={i} clause={clause} index={i} />
             ))}
@@ -193,16 +209,16 @@ export default function AnalysisResult({ analysis }: AnalysisResultProps) {
         )}
 
         {tab === "obligations" && (
-          <div className="glass rounded-xl p-5 space-y-5">
+          <div className="card" style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 20 }}>
             {analysis.obligations?.party1?.length > 0 && (
               <div>
-                <h3 className="text-sm font-semibold text-slate-300 mb-3">
-                  {analysis.parties?.[0]?.name ?? "Party 1"} Obligations
+                <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, color: "var(--text-primary)" }}>
+                  {analysis.parties?.[0]?.name ?? "Party 1"} — Obligations
                 </h3>
-                <ul className="space-y-2">
+                <ul style={{ display: "flex", flexDirection: "column", gap: 8, listStyle: "none", padding: 0, margin: 0 }}>
                   {analysis.obligations.party1.map((ob, i) => (
-                    <li key={i} className="flex gap-2 text-sm text-slate-400">
-                      <span className="text-blue-500 flex-shrink-0" aria-hidden="true">→</span>
+                    <li key={i} style={{ display: "flex", gap: 10, fontSize: 13, color: "var(--text-secondary)" }}>
+                      <span style={{ color: "#60a5fa", flexShrink: 0 }} aria-hidden="true">→</span>
                       {ob}
                     </li>
                   ))}
@@ -210,14 +226,14 @@ export default function AnalysisResult({ analysis }: AnalysisResultProps) {
               </div>
             )}
             {analysis.obligations?.party2?.length > 0 && (
-              <div>
-                <h3 className="text-sm font-semibold text-slate-300 mb-3">
-                  {analysis.parties?.[1]?.name ?? "Party 2"} Obligations
+              <div style={{ borderTop: "1px solid var(--border)", paddingTop: 20 }}>
+                <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, color: "var(--text-primary)" }}>
+                  {analysis.parties?.[1]?.name ?? "Party 2"} — Obligations
                 </h3>
-                <ul className="space-y-2">
+                <ul style={{ display: "flex", flexDirection: "column", gap: 8, listStyle: "none", padding: 0, margin: 0 }}>
                   {analysis.obligations.party2.map((ob, i) => (
-                    <li key={i} className="flex gap-2 text-sm text-slate-400">
-                      <span className="text-violet-400 flex-shrink-0" aria-hidden="true">→</span>
+                    <li key={i} style={{ display: "flex", gap: 10, fontSize: 13, color: "var(--text-secondary)" }}>
+                      <span style={{ color: "#a855f7", flexShrink: 0 }} aria-hidden="true">→</span>
                       {ob}
                     </li>
                   ))}
@@ -228,18 +244,25 @@ export default function AnalysisResult({ analysis }: AnalysisResultProps) {
         )}
 
         {tab === "lawyer" && (
-          <div className="glass rounded-xl p-5">
-            <div className="flex items-start gap-3 mb-5 p-3 rounded-lg bg-amber-950/20 border border-amber-800/30">
-              <span aria-hidden="true" className="text-amber-400 flex-shrink-0">💡</span>
-              <p className="text-xs text-amber-300 leading-relaxed">
+          <div className="card" style={{ padding: "16px 20px" }}>
+            <div style={{
+              display: "flex", gap: 10, padding: "10px 14px", borderRadius: 10, marginBottom: 16,
+              background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)"
+            }}>
+              <span aria-hidden="true" style={{ flexShrink: 0 }}>💡</span>
+              <p style={{ fontSize: 12, color: "#fde68a", lineHeight: 1.65 }}>
                 These questions were generated based on your specific document. Bring them to your attorney to get the most out of your consultation.
               </p>
             </div>
-            <h3 className="text-sm font-semibold text-slate-300 mb-3">Questions to ask your lawyer</h3>
-            <ol className="space-y-3" aria-label="Lawyer preparation questions">
+            <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>Questions to ask your lawyer</h3>
+            <ol style={{ display: "flex", flexDirection: "column", gap: 8, listStyle: "none", padding: 0, margin: 0 }} aria-label="Lawyer preparation questions">
               {analysis.lawyerQuestions?.map((q, i) => (
-                <li key={i} className="flex gap-3 text-sm text-slate-300 p-3 bg-slate-800/40 rounded-lg">
-                  <span className="text-blue-400 font-bold flex-shrink-0 w-5 text-center">{i + 1}</span>
+                <li key={i} style={{
+                  display: "flex", gap: 12, fontSize: 13, color: "var(--text-secondary)",
+                  padding: "10px 12px", background: "rgba(255,255,255,0.03)",
+                  border: "1px solid var(--border)", borderRadius: 9
+                }}>
+                  <span style={{ color: "#60a5fa", fontWeight: 700, flexShrink: 0, minWidth: 18, textAlign: "center" }}>{i + 1}</span>
                   {q}
                 </li>
               ))}

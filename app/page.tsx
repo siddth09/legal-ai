@@ -1,130 +1,133 @@
 import Link from "next/link";
-import { Scale, FileSearch, GitCompare, MessageSquare, ArrowRight, Shield, Zap, BookOpen } from "lucide-react";
+import { FileSearch, GitCompare, MessageSquare, ArrowRight, Shield } from "lucide-react";
 
 const features = [
   {
     icon: FileSearch,
     title: "Document Analyzer",
-    description: "Upload any legal document and get a plain-English breakdown with risk flags, key clauses, and obligations.",
+    desc: "Upload any legal document and get a plain-English breakdown — summary, risk flags, key clauses, and your action checklist.",
     href: "/analyze",
-    color: "from-blue-500 to-cyan-500",
+    gradient: "linear-gradient(135deg, #3b82f6, #06b6d4)",
+    shadow: "rgba(59,130,246,0.25)",
     badge: "Most Popular",
   },
   {
     icon: GitCompare,
     title: "Contract Comparator",
-    description: "Upload two versions of an agreement. LexAI highlights every change and explains what it means for you.",
+    desc: "Upload two document versions and see every meaningful change — what shifted, who benefits, and what it means.",
     href: "/compare",
-    color: "from-violet-500 to-purple-600",
+    gradient: "linear-gradient(135deg, #7c3aed, #a855f7)",
+    shadow: "rgba(124,58,237,0.25)",
     badge: null,
   },
   {
     icon: MessageSquare,
     title: "Ask LexAI",
-    description: "Ask any question about your uploaded document. Get grounded, document-specific answers instantly.",
+    desc: "Chat with your document. Ask anything in plain English and get grounded answers with direct quotes.",
     href: "/qa",
-    color: "from-emerald-500 to-teal-600",
+    gradient: "linear-gradient(135deg, #059669, #10b981)",
+    shadow: "rgba(16,185,129,0.25)",
     badge: null,
   },
 ];
 
 const stats = [
-  { value: "5+", label: "Document Types" },
-  { value: "Free", label: "No Sign-up Needed" },
-  { value: "AI", label: "Gemini Powered" },
-  { value: "100%", label: "Privacy-First" },
+  { value: "5+",    label: "Document types" },
+  { value: "Free",  label: "No sign-up" },
+  { value: "AI",    label: "Gemini powered" },
+  { value: "100%",  label: "Privacy-first" },
 ];
 
-const useCases = [
-  { icon: "🏠", label: "Lease Agreements" },
-  { icon: "💼", label: "Employment Contracts" },
-  { icon: "🤝", label: "NDAs & Confidentiality" },
-  { icon: "📋", label: "Terms of Service" },
-  { icon: "💰", label: "Loan Agreements" },
-  { icon: "🛒", label: "Purchase Agreements" },
+const useCases = ["Lease Agreements", "Employment Contracts", "NDAs", "Terms of Service", "Loan Agreements", "Purchase Agreements", "Service Contracts", "Privacy Policies"];
+
+const steps = [
+  { icon: "📄", step: "01", title: "Upload your document", desc: "PDF or plain text — any legal document works." },
+  { icon: "⚡", step: "02", title: "AI reads everything",  desc: "Gemini extracts clauses, parties, dates, and risks." },
+  { icon: "✅", step: "03", title: "Act with confidence",  desc: "Get a plain-English summary and your next-step checklist." },
 ];
 
 export default function HomePage() {
   return (
-    <div className="bg-mesh min-h-screen">
-      {/* Hero */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center" aria-labelledby="hero-heading">
-        <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold px-3 py-1.5 rounded-full mb-8">
-          <Shield size={12} aria-hidden="true" />
+    <div className="hero-glow">
+      {/* ── Hero ── */}
+      <section style={{ maxWidth: 960, margin: "0 auto", padding: "80px 24px 72px", textAlign: "center" }}>
+        <div style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)",
+          color: "#60a5fa", fontSize: 12, fontWeight: 600,
+          padding: "5px 14px", borderRadius: 99, marginBottom: 28,
+        }}>
+          <Shield size={11} aria-hidden="true" />
           AI-powered · Not legal advice · Privacy-first
         </div>
 
-        <h1 id="hero-heading" className="text-4xl sm:text-6xl font-extrabold tracking-tight leading-tight mb-6">
-          Understand Any Legal
-          <br />
+        <h1 style={{ fontSize: "clamp(34px,6vw,62px)", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: 20 }}>
+          Understand Any Legal<br />
           <span className="gradient-text">Document in Seconds</span>
         </h1>
 
-        <p className="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+        <p style={{ fontSize: 17, color: "var(--text-secondary)", maxWidth: 500, margin: "0 auto 36px", lineHeight: 1.7 }}>
           LexAI uses AI to decode contracts, flag risks, compare agreements, and help you
           ask the right questions — so you&apos;re never lost in legal language again.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-3 justify-center mb-16">
-          <Link
-            href="/analyze"
-            className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-3 rounded-xl transition-all hover:scale-105 active:scale-100 shadow-lg shadow-blue-900/30"
-          >
-            <FileSearch size={18} aria-hidden="true" />
+        <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginBottom: 52 }}>
+          <Link href="/analyze" className="btn-primary" style={{ padding: "12px 22px", fontSize: 15 }}>
+            <FileSearch size={17} aria-hidden="true" />
             Analyze a Document
-            <ArrowRight size={16} aria-hidden="true" />
+            <ArrowRight size={15} aria-hidden="true" />
           </Link>
-          <Link
-            href="/compare"
-            className="inline-flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold px-6 py-3 rounded-xl transition-all hover:scale-105 active:scale-100"
-          >
-            <GitCompare size={18} aria-hidden="true" />
+          <Link href="/compare" className="btn-secondary" style={{ padding: "12px 22px", fontSize: 15 }}>
+            <GitCompare size={17} aria-hidden="true" />
             Compare Contracts
           </Link>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl mx-auto" role="list" aria-label="LexAI statistics">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, maxWidth: 400, margin: "0 auto" }}
+          role="list" aria-label="LexAI statistics">
           {stats.map((s) => (
-            <div key={s.label} className="glass rounded-xl p-4" role="listitem">
-              <div className="text-2xl font-bold text-blue-400">{s.value}</div>
-              <div className="text-xs text-slate-500 mt-0.5">{s.label}</div>
+            <div key={s.label} className="card" style={{ padding: "14px 8px", textAlign: "center" }} role="listitem">
+              <div style={{ fontSize: 20, fontWeight: 800, color: "#60a5fa" }}>{s.value}</div>
+              <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 3 }}>{s.label}</div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Features */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16" aria-labelledby="features-heading">
-        <h2 id="features-heading" className="text-2xl sm:text-3xl font-bold text-center mb-3">
-          Everything you need to navigate legal documents
-        </h2>
-        <p className="text-slate-400 text-center mb-10 max-w-xl mx-auto">
-          Three powerful tools. No legal background required.
-        </p>
-
-        <div className="grid sm:grid-cols-3 gap-6">
+      {/* ── Features ── */}
+      <section style={{ maxWidth: 960, margin: "0 auto", padding: "0 24px 72px" }} aria-labelledby="features-heading">
+        <div style={{ textAlign: "center", marginBottom: 36 }}>
+          <p className="section-label" style={{ marginBottom: 10 }}>What you can do</p>
+          <h2 id="features-heading" style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.02em" }}>
+            Three tools. Zero legal expertise required.
+          </h2>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 14 }}>
           {features.map((f) => {
             const Icon = f.icon;
             return (
-              <Link
-                key={f.href}
-                href={f.href}
-                className="group glass rounded-2xl p-6 hover:border-slate-600 hover:-translate-y-1 transition-all relative overflow-hidden"
-                aria-label={`Go to ${f.title}`}
-              >
+              <Link key={f.href} href={f.href} className="card card-hover"
+                style={{ padding: 22, display: "block", textDecoration: "none", position: "relative", overflow: "hidden", transition: "all 0.2s" }}
+                aria-label={`Go to ${f.title}`}>
                 {f.badge && (
-                  <span className="absolute top-4 right-4 text-xs font-semibold bg-blue-600/20 text-blue-400 border border-blue-600/30 rounded-full px-2 py-0.5">
-                    {f.badge}
-                  </span>
+                  <span style={{
+                    position: "absolute", top: 14, right: 14, fontSize: 10, fontWeight: 700,
+                    background: "rgba(59,130,246,0.15)", color: "#60a5fa",
+                    border: "1px solid rgba(59,130,246,0.25)", borderRadius: 99, padding: "2px 8px"
+                  }}>{f.badge}</span>
                 )}
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${f.color} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
-                  <Icon size={22} className="text-white" aria-hidden="true" />
+                <div style={{
+                  width: 42, height: 42, borderRadius: 12, background: f.gradient,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  marginBottom: 14, boxShadow: `0 4px 14px ${f.shadow}`
+                }}>
+                  <Icon size={19} color="#fff" aria-hidden="true" />
                 </div>
-                <h3 className="font-bold text-lg mb-2 group-hover:text-blue-400 transition-colors">{f.title}</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">{f.description}</p>
-                <div className="mt-4 flex items-center gap-1 text-blue-400 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                  Try it <ArrowRight size={14} aria-hidden="true" />
+                <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 7, color: "var(--text-primary)" }}>{f.title}</h3>
+                <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.65 }}>{f.desc}</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 16, fontSize: 12, fontWeight: 600, color: "#60a5fa" }}>
+                  Try it <ArrowRight size={12} aria-hidden="true" />
                 </div>
               </Link>
             );
@@ -132,57 +135,51 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Use Cases */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12" aria-labelledby="usecases-heading">
-        <h2 id="usecases-heading" className="text-xl font-bold text-center mb-6 text-slate-300">
-          Works with all types of legal documents
-        </h2>
-        <div className="flex flex-wrap gap-3 justify-center">
+      {/* ── Use cases ── */}
+      <section style={{ maxWidth: 960, margin: "0 auto", padding: "0 24px 32px" }}>
+        <p style={{ textAlign: "center", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 12 }}>
+          Works with
+        </p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
           {useCases.map((uc) => (
-            <div
-              key={uc.label}
-              className="glass rounded-full px-4 py-2 text-sm font-medium text-slate-300 flex items-center gap-2"
-            >
-              <span role="img" aria-hidden="true">{uc.icon}</span>
-              {uc.label}
+            <span key={uc} className="card" style={{ padding: "5px 14px", fontSize: 12, fontWeight: 500, color: "var(--text-secondary)" }}>
+              {uc}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      {/* ── How it works ── */}
+      <section style={{ maxWidth: 960, margin: "0 auto", padding: "48px 24px 72px" }} aria-labelledby="how-heading">
+        <div style={{ textAlign: "center", marginBottom: 40 }}>
+          <p className="section-label" style={{ marginBottom: 10 }}>Simple workflow</p>
+          <h2 id="how-heading" style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.02em" }}>How it works</h2>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 24 }}>
+          {steps.map((s, i) => (
+            <div key={i} style={{ textAlign: "center" }}>
+              <div style={{
+                width: 52, height: 52, borderRadius: 14, background: "var(--bg-card)",
+                border: "1px solid var(--border)", display: "flex", alignItems: "center",
+                justifyContent: "center", fontSize: 22, margin: "0 auto 12px"
+              }} aria-hidden="true">{s.icon}</div>
+              <p className="section-label" style={{ marginBottom: 5 }}>Step {s.step}</p>
+              <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 5 }}>{s.title}</h3>
+              <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.65 }}>{s.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16" aria-labelledby="how-heading">
-        <h2 id="how-heading" className="text-2xl font-bold text-center mb-10">How it works</h2>
-        <div className="grid sm:grid-cols-3 gap-8">
-          {[
-            { step: "1", icon: "📄", title: "Upload your document", desc: "PDF or plain text — lease, contract, NDA, ToS — anything." },
-            { step: "2", icon: "🤖", title: "AI analyzes it", desc: "Gemini reads the full document and extracts clauses, risks, and obligations." },
-            { step: "3", icon: "✅", title: "Act with confidence", desc: "Get a plain-English summary, risk flags, and a checklist of next steps." },
-          ].map((item) => (
-            <div key={item.step} className="text-center">
-              <div className="w-14 h-14 rounded-2xl bg-slate-800/80 border border-slate-700 flex items-center justify-center text-2xl mx-auto mb-4" role="img" aria-label={item.title}>
-                {item.icon}
-              </div>
-              <div className="text-xs font-bold text-blue-500 uppercase tracking-widest mb-1">Step {item.step}</div>
-              <h3 className="font-bold mb-2">{item.title}</h3>
-              <p className="text-slate-400 text-sm">{item.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Disclaimer */}
-      <section className="max-w-3xl mx-auto px-4 sm:px-6 pb-16">
-        <div className="glass rounded-2xl p-6 flex gap-3 items-start" role="note">
-          <BookOpen size={20} className="text-amber-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
-          <div>
-            <p className="font-semibold text-amber-400 text-sm mb-1">Important disclaimer</p>
-            <p className="text-slate-400 text-sm leading-relaxed">
-              LexAI provides legal <strong className="text-slate-300">information</strong> only — not legal advice. 
-              AI-generated analysis may contain errors. Always consult a qualified attorney before making decisions 
-              based on legal documents.
-            </p>
-          </div>
+      {/* ── Disclaimer ── */}
+      <section style={{ maxWidth: 640, margin: "0 auto", padding: "0 24px 72px" }}>
+        <div className="card" style={{ padding: 18, display: "flex", gap: 12, alignItems: "flex-start" }}>
+          <Shield size={15} style={{ color: "#fbbf24", flexShrink: 0, marginTop: 2 }} aria-hidden="true" />
+          <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.65 }}>
+            <strong style={{ color: "#fbbf24" }}>Important:</strong>{" "}
+            LexAI provides legal <strong style={{ color: "var(--text-primary)" }}>information</strong> only — not legal advice.
+            AI-generated analysis may contain errors. Always consult a qualified attorney before making decisions based on any legal document.
+          </p>
         </div>
       </section>
     </div>

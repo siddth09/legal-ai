@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 "use client";
 
 import { changeTypeColor, significanceLabel } from "@/lib/utils";
@@ -24,85 +22,99 @@ interface ComparisonData {
 }
 
 interface CompareViewProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  comparison: Record<string, any>;
+  comparison: ComparisonData;
   nameA?: string;
   nameB?: string;
 }
 
+const riskStyle = {
+  higher:  { bg: "rgba(248,113,113,0.07)", border: "rgba(248,113,113,0.2)",  color: "#fca5a5", icon: "⚠️" },
+  lower:   { bg: "rgba(52,211,153,0.07)",  border: "rgba(52,211,153,0.2)",   color: "#6ee7b7", icon: "✅" },
+  similar: { bg: "rgba(148,163,184,0.07)", border: "rgba(148,163,184,0.15)", color: "#94a3b8", icon: "ℹ️" },
+};
+
 export default function CompareView({ comparison, nameA = "Document A", nameB = "Document B" }: CompareViewProps) {
-  const high   = comparison.changes.filter((c) => c.significance === "high").length;
-  const medium = comparison.changes.filter((c) => c.significance === "medium").length;
-  const added   = comparison.changes.filter((c) => c.type === "added").length;
-  const removed = comparison.changes.filter((c) => c.type === "removed").length;
+  const high     = comparison.changes.filter((c) => c.significance === "high").length;
+  const medium   = comparison.changes.filter((c) => c.significance === "medium").length;
+  const added    = comparison.changes.filter((c) => c.type === "added").length;
+  const removed  = comparison.changes.filter((c) => c.type === "removed").length;
   const modified = comparison.changes.filter((c) => c.type === "modified").length;
 
-  const riskBg = {
-    higher: "bg-red-950/20 border-red-800/40 text-red-400",
-    lower:  "bg-emerald-950/20 border-emerald-800/40 text-emerald-400",
-    similar: "bg-slate-800/40 border-slate-700/40 text-slate-400",
-  }[comparison.overallRisk];
+  const rs = riskStyle[comparison.overallRisk];
 
   return (
-    <div className="space-y-5 fade-in" role="region" aria-label="Comparison results">
-      {/* Summary header */}
-      <div className="glass rounded-2xl p-6">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="text-sm font-semibold text-slate-300 flex items-center gap-2">
-            <span className="px-2 py-0.5 bg-blue-600/20 text-blue-400 rounded text-xs">{nameA}</span>
-            <ArrowRight size={14} className="text-slate-500" aria-hidden="true" />
-            <span className="px-2 py-0.5 bg-violet-600/20 text-violet-400 rounded text-xs">{nameB}</span>
-          </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }} className="fade-in" role="region" aria-label="Comparison results">
+
+      {/* Header */}
+      <div className="card" style={{ padding: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, padding: "3px 10px", borderRadius: 6, background: "rgba(59,130,246,0.12)", color: "#60a5fa" }}>
+            {nameA}
+          </span>
+          <ArrowRight size={13} style={{ color: "var(--text-muted)" }} aria-hidden="true" />
+          <span style={{ fontSize: 12, fontWeight: 700, padding: "3px 10px", borderRadius: 6, background: "rgba(124,58,237,0.12)", color: "#a78bfa" }}>
+            {nameB}
+          </span>
         </div>
-        <p className="text-sm text-slate-300 leading-relaxed mb-4">{comparison.summary}</p>
+        <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.65, marginBottom: 14 }}>{comparison.summary}</p>
 
         {/* Overall risk */}
-        <div className={`rounded-xl p-3 border flex gap-2 items-start ${riskBg}`} role="note">
-          <span aria-hidden="true" className="flex-shrink-0">
-            {comparison.overallRisk === "higher" ? "⚠️" : comparison.overallRisk === "lower" ? "✅" : "ℹ️"}
-          </span>
+        <div style={{
+          padding: "10px 14px", borderRadius: 10, border: `1px solid ${rs.border}`,
+          background: rs.bg, display: "flex", gap: 10, alignItems: "flex-start"
+        }} role="note">
+          <span aria-hidden="true" style={{ flexShrink: 0 }}>{rs.icon}</span>
           <div>
-            <span className="text-xs font-semibold uppercase tracking-wider">
+            <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: rs.color }}>
               Risk in {nameB}: {comparison.overallRisk}
             </span>
-            <p className="text-xs mt-1 opacity-80">{comparison.overallRiskExplanation}</p>
+            <p style={{ fontSize: 12, marginTop: 4, color: rs.color, opacity: 0.8, lineHeight: 1.55 }}>
+              {comparison.overallRiskExplanation}
+            </p>
           </div>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-5 gap-2 mt-4" role="list" aria-label="Change statistics">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 8, marginTop: 14 }} role="list" aria-label="Change statistics">
           {[
-            { label: "High Impact", value: high, color: "text-red-400" },
-            { label: "Med Impact", value: medium, color: "text-amber-400" },
-            { label: "Added", value: added, color: "text-emerald-400" },
-            { label: "Removed", value: removed, color: "text-red-400" },
-            { label: "Modified", value: modified, color: "text-blue-400" },
+            { label: "High Impact", value: high,     color: "#f87171" },
+            { label: "Med Impact",  value: medium,   color: "#fbbf24" },
+            { label: "Added",       value: added,    color: "#34d399" },
+            { label: "Removed",     value: removed,  color: "#f87171" },
+            { label: "Modified",    value: modified, color: "#60a5fa" },
           ].map((s) => (
-            <div key={s.label} className="rounded-lg bg-slate-800/50 p-2.5 text-center" role="listitem">
-              <div className={`text-xl font-bold ${s.color}`}>{s.value}</div>
-              <div className="text-xs text-slate-500 mt-0.5 leading-tight">{s.label}</div>
+            <div key={s.label} style={{
+              borderRadius: 9, background: "rgba(255,255,255,0.03)",
+              border: "1px solid var(--border)", padding: "8px 4px", textAlign: "center"
+            }} role="listitem">
+              <div style={{ fontSize: 18, fontWeight: 800, color: s.color }}>{s.value}</div>
+              <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 2, lineHeight: 1.3 }}>{s.label}</div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Changes list */}
-      <div className="space-y-3">
-        <h2 className="font-semibold text-slate-300 text-sm px-1">
+      {/* Changes */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <h2 style={{ fontSize: 13, fontWeight: 700, color: "var(--text-secondary)", paddingLeft: 2 }}>
           All changes ({comparison.changes.length})
         </h2>
         {comparison.changes.map((change, i) => (
-          <div key={i} className="glass rounded-xl overflow-hidden fade-in" style={{ animationDelay: `${i * 40}ms` }}>
+          <div key={i} className="card fade-in" style={{ overflow: "hidden", animationDelay: `${i * 35}ms` }}>
             {/* Change header */}
-            <div className="px-4 py-3 flex items-center gap-2 flex-wrap border-b border-slate-800/50">
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${changeTypeColor(change.type)}`}>
+            <div style={{
+              padding: "10px 14px", display: "flex", alignItems: "center", gap: 8,
+              flexWrap: "wrap", borderBottom: "1px solid var(--border)"
+            }}>
+              <span style={{ fontSize: 10, fontWeight: 700 }} className={changeTypeColor(change.type)}>
                 {change.type.toUpperCase()}
               </span>
-              <span className="text-sm font-medium text-slate-200">{change.section}</span>
-              <span className="ml-auto text-xs text-slate-500">{significanceLabel(change.significance)}</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", flex: 1 }}>{change.section}</span>
+              <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{significanceLabel(change.significance)}</span>
               {change.favoredParty !== "neutral" && (
-                <span className="text-xs text-slate-500">
-                  Favors: <span className={change.favoredParty === "A" ? "text-blue-400" : "text-violet-400"}>
+                <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                  Favors:{" "}
+                  <span style={{ color: change.favoredParty === "A" ? "#60a5fa" : "#a78bfa" }}>
                     {change.favoredParty === "A" ? nameA : nameB}
                   </span>
                 </span>
@@ -110,23 +122,23 @@ export default function CompareView({ comparison, nameA = "Document A", nameB = 
             </div>
 
             {/* Plain English */}
-            <div className="px-4 py-3">
-              <p className="text-sm text-slate-300">{change.plainEnglish}</p>
+            <div style={{ padding: "10px 14px" }}>
+              <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6 }}>{change.plainEnglish}</p>
             </div>
 
             {/* Diff view */}
             {(change.documentA || change.documentB) && (
-              <div className="grid grid-cols-2 gap-0 border-t border-slate-800/50">
-                <div className="p-3 border-r border-slate-800/50 bg-red-950/10">
-                  <p className="text-xs font-semibold text-slate-500 mb-1.5">{nameA}</p>
-                  <p className="text-xs text-red-300/80 font-mono leading-relaxed">
-                    {change.documentA ?? <span className="italic text-slate-600">Not present</span>}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderTop: "1px solid var(--border)" }}>
+                <div style={{ padding: "10px 14px", borderRight: "1px solid var(--border)", background: "rgba(248,113,113,0.04)" }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", marginBottom: 6 }}>{nameA}</p>
+                  <p style={{ fontSize: 11, fontFamily: "monospace", color: "#fca5a5", lineHeight: 1.6, opacity: 0.85 }}>
+                    {change.documentA ?? <span style={{ fontStyle: "italic", color: "var(--text-muted)" }}>Not present</span>}
                   </p>
                 </div>
-                <div className="p-3 bg-emerald-950/10">
-                  <p className="text-xs font-semibold text-slate-500 mb-1.5">{nameB}</p>
-                  <p className="text-xs text-emerald-300/80 font-mono leading-relaxed">
-                    {change.documentB ?? <span className="italic text-slate-600">Not present</span>}
+                <div style={{ padding: "10px 14px", background: "rgba(52,211,153,0.04)" }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", marginBottom: 6 }}>{nameB}</p>
+                  <p style={{ fontSize: 11, fontFamily: "monospace", color: "#6ee7b7", lineHeight: 1.6, opacity: 0.85 }}>
+                    {change.documentB ?? <span style={{ fontStyle: "italic", color: "var(--text-muted)" }}>Not present</span>}
                   </p>
                 </div>
               </div>
@@ -137,12 +149,12 @@ export default function CompareView({ comparison, nameA = "Document A", nameB = 
 
       {/* Recommendations */}
       {comparison.recommendations?.length > 0 && (
-        <div className="glass rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-slate-300 mb-3">💡 Recommendations</h3>
-          <ul className="space-y-2">
+        <div className="card" style={{ padding: "16px 20px" }}>
+          <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>💡 Recommendations</h3>
+          <ul style={{ display: "flex", flexDirection: "column", gap: 8, listStyle: "none", padding: 0, margin: 0 }}>
             {comparison.recommendations.map((rec, i) => (
-              <li key={i} className="flex gap-2 text-sm text-slate-400">
-                <span className="text-blue-400 flex-shrink-0" aria-hidden="true">→</span>
+              <li key={i} style={{ display: "flex", gap: 10, fontSize: 13, color: "var(--text-secondary)" }}>
+                <span style={{ color: "#60a5fa", flexShrink: 0 }} aria-hidden="true">→</span>
                 {rec}
               </li>
             ))}

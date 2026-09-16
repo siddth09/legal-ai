@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Send, Bot, User, AlertCircle, HelpCircle } from "lucide-react";
+import { Send, Bot, User, HelpCircle } from "lucide-react";
 
 interface Message {
   role: "user" | "assistant";
@@ -26,140 +26,94 @@ const SUGGESTED_QUESTIONS = [
   "What are the payment terms?",
 ];
 
+const confidenceColor = (c?: "high" | "medium" | "low") =>
+  c === "high" ? "#34d399" : c === "medium" ? "#fbbf24" : "var(--text-muted)";
+
 export default function ChatInterface({ documentText, documentName }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content: `I've read your document${documentName ? ` ("${documentName}")` : ""}. Ask me anything about it — I'll answer based only on what's written in the document.`,
-    },
+    { role: "assistant", content: `I've read your document${documentName ? ` ("${documentName}")` : ""}. Ask me anything about it — I'll answer based only on what's written in the document.` },
   ]);
-  const [input, setInput] = useState("");
+  const [input,   setInput]   = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef  = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
-  const send = useCallback(
-    async (question: string) => {
-      if (!question.trim() || loading) return;
-
-      const userMsg: Message = { role: "user", content: question.trim() };
-      setMessages((prev) => [...prev, userMsg]);
-      setInput("");
-      setLoading(true);
-
-      try {
-        const res = await fetch("/api/qa", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ documentText, question: question.trim() }),
-        });
-
-        const data = await res.json();
-
-        if (!res.ok || !data.success) {
-          throw new Error(data.error ?? "Failed to get answer");
-        }
-
-        const { answer } = data;
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content: answer.answer,
-            relevantText: answer.relevantText,
-            confidence: answer.confidence,
-            disclaimer: answer.disclaimer,
-            followUpQuestions: answer.followUpQuestions,
-          },
-        ]);
-      } catch (err) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content: err instanceof Error ? err.message : "Something went wrong. Please try again.",
-            error: true,
-          },
-        ]);
-      } finally {
-        setLoading(false);
-        setTimeout(() => inputRef.current?.focus(), 100);
-      }
-    },
-    [documentText, loading]
-  );
-
-  const confidenceColor = (c?: "high" | "medium" | "low") =>
-    c === "high" ? "text-emerald-400" : c === "medium" ? "text-amber-400" : "text-slate-500";
+  const send = useCallback(async (question: string) => {
+    if (!question.trim() || loading) return;
+    setMessages((prev) => [...prev, { role: "user", content: question.trim() }]);
+    setInput(""); setLoading(true);
+    try {
+      const res  = await fetch("/api/qa", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ documentText, question: question.trim() }) });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error ?? "Failed to get answer");
+      const { answer } = data;
+      setMessages((prev) => [...prev, { role: "assistant", content: answer.answer, relevantText: answer.relevantText, confidence: answer.confidence, disclaimer: answer.disclaimer, followUpQuestions: answer.followUpQuestions }]);
+    } catch (err) {
+      setMessages((prev) => [...prev, { role: "assistant", content: err instanceof Error ? err.message : "Something went wrong.", error: true }]);
+    } finally {
+      setLoading(false);
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  }, [documentText, loading]);
 
   return (
-    <div className="flex flex-col h-[600px] glass rounded-2xl overflow-hidden">
+    <div className="card" style={{ display: "flex", flexDirection: "column", height: 580, overflow: "hidden" }}>
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4" role="log" aria-live="polite" aria-label="Chat messages">
+      <div style={{ flex: 1, overflowY: "auto", padding: "16px 16px 8px", display: "flex", flexDirection: "column", gap: 16 }}
+        role="log" aria-live="polite" aria-label="Chat messages">
         {messages.map((msg, i) => (
-          <div
-            key={i}
-            className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""} fade-in`}
-          >
+          <div key={i} style={{ display: "flex", gap: 10, flexDirection: msg.role === "user" ? "row-reverse" : "row" }} className="fade-in">
             {/* Avatar */}
-            <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                msg.role === "assistant"
-                  ? "bg-gradient-to-br from-blue-500 to-violet-600"
-                  : "bg-slate-700"
-              }`}
-              aria-hidden="true"
-            >
+            <div style={{
+              width: 30, height: 30, borderRadius: "50%", flexShrink: 0,
+              background: msg.role === "assistant" ? "linear-gradient(135deg,#3b82f6,#7c3aed)" : "rgba(255,255,255,0.08)",
+              border: "1px solid var(--border)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }} aria-hidden="true">
               {msg.role === "assistant"
-                ? <Bot size={16} className="text-white" />
-                : <User size={16} className="text-slate-300" />}
+                ? <Bot size={14} color="#fff" />
+                : <User size={14} color="var(--text-secondary)" />}
             </div>
 
-            <div className={`max-w-[80%] space-y-2 ${msg.role === "user" ? "items-end" : "items-start"} flex flex-col`}>
+            <div style={{ maxWidth: "78%", display: "flex", flexDirection: "column", gap: 6, alignItems: msg.role === "user" ? "flex-end" : "flex-start" }}>
               {/* Bubble */}
-              <div
-                className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
-                  msg.role === "user"
-                    ? "bg-blue-600/30 border border-blue-600/30 text-slate-200 rounded-tr-sm"
-                    : msg.error
-                    ? "bg-red-950/30 border border-red-800/40 text-red-300 rounded-tl-sm"
-                    : "bg-slate-800/70 border border-slate-700/50 text-slate-200 rounded-tl-sm"
-                }`}
-              >
+              <div style={{
+                padding: "10px 14px", borderRadius: 14, fontSize: 13, lineHeight: 1.65,
+                ...(msg.role === "user"
+                  ? { background: "rgba(59,130,246,0.18)", border: "1px solid rgba(59,130,246,0.25)", color: "var(--text-primary)", borderTopRightRadius: 4 }
+                  : msg.error
+                  ? { background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.2)", color: "#fca5a5", borderTopLeftRadius: 4 }
+                  : { background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", color: "var(--text-primary)", borderTopLeftRadius: 4 }),
+              }}>
                 {msg.content}
               </div>
 
-              {/* Relevant text quote */}
+              {/* Quote */}
               {msg.relevantText && (
-                <blockquote className="border-l-2 border-blue-600/50 pl-3 text-xs text-slate-500 italic max-w-full">
+                <blockquote style={{ borderLeft: "2px solid rgba(59,130,246,0.4)", paddingLeft: 10, fontSize: 11, color: "var(--text-muted)", fontStyle: "italic", lineHeight: 1.6, maxWidth: "100%" }}>
                   &ldquo;{msg.relevantText}&rdquo;
                 </blockquote>
               )}
 
-              {/* Confidence + disclaimer */}
+              {/* Confidence */}
               {msg.confidence && (
-                <p className={`text-xs ${confidenceColor(msg.confidence)}`}>
+                <p style={{ fontSize: 11, color: confidenceColor(msg.confidence) }}>
                   Confidence: {msg.confidence}
-                  {msg.disclaimer && (
-                    <span className="text-slate-600 ml-2">· {msg.disclaimer}</span>
-                  )}
+                  {msg.disclaimer && <span style={{ color: "var(--text-muted)", marginLeft: 6 }}>· {msg.disclaimer}</span>}
                 </p>
               )}
 
-              {/* Follow-up suggestions */}
+              {/* Follow-up chips */}
               {msg.followUpQuestions && msg.followUpQuestions.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-1">
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 2 }}>
                   {msg.followUpQuestions.map((q, qi) => (
-                    <button
-                      key={qi}
-                      onClick={() => send(q)}
-                      disabled={loading}
-                      className="text-xs px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-full text-slate-400 hover:text-slate-200 transition-all disabled:opacity-50"
-                    >
+                    <button key={qi} onClick={() => send(q)} disabled={loading} style={{
+                      fontSize: 11, padding: "4px 10px", borderRadius: 99, cursor: "pointer",
+                      background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)",
+                      color: "var(--text-secondary)", opacity: loading ? 0.5 : 1, transition: "all 0.15s"
+                    }}>
                       {q}
                     </button>
                   ))}
@@ -169,22 +123,19 @@ export default function ChatInterface({ documentText, documentName }: ChatInterf
           </div>
         ))}
 
+        {/* Typing indicator */}
         {loading && (
-          <div className="flex gap-3 fade-in" aria-label="LexAI is thinking" aria-live="polite">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center flex-shrink-0">
-              <Bot size={16} className="text-white" aria-hidden="true" />
+          <div style={{ display: "flex", gap: 10 }} aria-label="LexAI is thinking" aria-live="polite" className="fade-in">
+            <div style={{ width: 30, height: 30, borderRadius: "50%", background: "linear-gradient(135deg,#3b82f6,#7c3aed)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Bot size={14} color="#fff" aria-hidden="true" />
             </div>
-            <div className="bg-slate-800/70 border border-slate-700/50 px-4 py-3 rounded-2xl rounded-tl-sm">
-              <div className="flex gap-1 items-center h-4">
-                {[0, 1, 2].map((d) => (
-                  <span
-                    key={d}
-                    className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce"
-                    style={{ animationDelay: `${d * 150}ms` }}
-                    aria-hidden="true"
-                  />
-                ))}
-              </div>
+            <div style={{ padding: "12px 16px", borderRadius: 14, borderTopLeftRadius: 4, background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 4 }}>
+              {[0, 1, 2].map((d) => (
+                <span key={d} style={{
+                  width: 6, height: 6, borderRadius: "50%", background: "#60a5fa", display: "block",
+                  animation: "dot 1.2s ease-in-out infinite", animationDelay: `${d * 180}ms`
+                }} aria-hidden="true" />
+              ))}
             </div>
           </div>
         )}
@@ -193,18 +144,17 @@ export default function ChatInterface({ documentText, documentName }: ChatInterf
 
       {/* Suggested questions */}
       {messages.length === 1 && (
-        <div className="px-4 py-2 border-t border-slate-800/50">
-          <p className="text-xs text-slate-500 mb-2 flex items-center gap-1">
+        <div style={{ padding: "10px 16px", borderTop: "1px solid var(--border)" }}>
+          <p style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 8, display: "flex", alignItems: "center", gap: 4 }}>
             <HelpCircle size={11} aria-hidden="true" /> Suggested questions
           </p>
-          <div className="flex flex-wrap gap-1.5">
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {SUGGESTED_QUESTIONS.map((q, i) => (
-              <button
-                key={i}
-                onClick={() => send(q)}
-                disabled={loading}
-                className="text-xs px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-full text-slate-400 hover:text-slate-200 transition-all disabled:opacity-50"
-              >
+              <button key={i} onClick={() => send(q)} disabled={loading} style={{
+                fontSize: 11, padding: "5px 11px", borderRadius: 99, cursor: "pointer",
+                background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)",
+                color: "var(--text-secondary)", opacity: loading ? 0.5 : 1, transition: "all 0.15s"
+              }}>
                 {q}
               </button>
             ))}
@@ -214,7 +164,7 @@ export default function ChatInterface({ documentText, documentName }: ChatInterf
 
       {/* Input */}
       <form
-        className="p-4 border-t border-slate-800/60 flex gap-2"
+        style={{ padding: "12px 16px", borderTop: "1px solid var(--border)", display: "flex", gap: 8 }}
         onSubmit={(e) => { e.preventDefault(); send(input); }}
         role="search"
         aria-label="Ask a question about the document"
@@ -227,16 +177,24 @@ export default function ChatInterface({ documentText, documentName }: ChatInterf
           placeholder="Ask anything about this document…"
           maxLength={500}
           disabled={loading}
-          className="flex-1 bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-blue-500 disabled:opacity-50"
+          style={{
+            flex: 1, background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)",
+            borderRadius: 10, padding: "9px 14px", fontSize: 13, color: "var(--text-primary)",
+            outline: "none", transition: "border-color 0.15s",
+            opacity: loading ? 0.5 : 1,
+          }}
+          onFocus={e => (e.target.style.borderColor = "rgba(59,130,246,0.5)")}
+          onBlur={e => (e.target.style.borderColor = "var(--border)")}
           aria-label="Question input"
         />
         <button
           type="submit"
           disabled={!input.trim() || loading}
-          className="w-10 h-10 rounded-xl bg-blue-600 hover:bg-blue-500 flex items-center justify-center flex-shrink-0 disabled:opacity-40 transition-colors"
+          className="btn-primary"
+          style={{ width: 40, height: 40, padding: 0, justifyContent: "center", flexShrink: 0, borderRadius: 10 }}
           aria-label="Send question"
         >
-          <Send size={16} className="text-white" aria-hidden="true" />
+          <Send size={15} aria-hidden="true" />
         </button>
       </form>
     </div>

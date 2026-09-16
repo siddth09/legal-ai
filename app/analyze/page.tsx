@@ -5,94 +5,79 @@ import { Loader2, FileSearch, AlertCircle } from "lucide-react";
 import DocumentUploader from "@/components/DocumentUploader";
 import AnalysisResult from "@/components/AnalysisResult";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnalysisData = Record<string, any>;
-
 type Status = "idle" | "loading" | "success" | "error";
 
 export default function AnalyzePage() {
-  const [file, setFile] = useState<File | null>(null);
-  const [rawText, setRawText] = useState<string | null>(null);
-  const [status, setStatus] = useState<Status>("idle");
-  const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [file,     setFile]     = useState<File | null>(null);
+  const [rawText,  setRawText]  = useState<string | null>(null);
+  const [status,   setStatus]   = useState<Status>("idle");
+  const [analysis, setAnalysis] = useState<unknown>(null);
+  const [error,    setError]    = useState<string | null>(null);
 
   const handleFile = useCallback((f: File) => {
-    setFile(f);
-    setRawText(null);
-    setStatus("idle");
-    setAnalysis(null);
-    setError(null);
+    setFile(f); setRawText(null); setStatus("idle"); setAnalysis(null); setError(null);
   }, []);
 
   const handleText = useCallback((t: string) => {
-    setRawText(t);
-    setFile(null);
-    setStatus("idle");
-    setAnalysis(null);
-    setError(null);
+    setRawText(t); setFile(null); setStatus("idle"); setAnalysis(null); setError(null);
   }, []);
 
   const handleClear = () => {
-    setFile(null);
-    setRawText(null);
-    setStatus("idle");
-    setAnalysis(null);
-    setError(null);
+    setFile(null); setRawText(null); setStatus("idle"); setAnalysis(null); setError(null);
   };
 
   const analyze = async () => {
     if (!file && !rawText) return;
-
-    setStatus("loading");
-    setError(null);
-
+    setStatus("loading"); setError(null);
     try {
-      const formData = new FormData();
-      if (file) formData.append("file", file);
-      else if (rawText) formData.append("text", rawText);
-
-      const res = await fetch("/api/analyze", { method: "POST", body: formData });
+      const fd = new FormData();
+      if (file) fd.append("file", file);
+      else if (rawText) fd.append("text", rawText);
+      const res  = await fetch("/api/analyze", { method: "POST", body: fd });
       const data = await res.json();
-
       if (!res.ok || !data.success) throw new Error(data.error ?? "Analysis failed");
-
-      setAnalysis(data.analysis);
-      setStatus("success");
+      setAnalysis(data.analysis); setStatus("success");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
-      setStatus("error");
+      setError(err instanceof Error ? err.message : "Something went wrong."); setStatus("error");
     }
   };
 
   const hasDocument = !!file || !!rawText;
 
   return (
-    <div className="bg-mesh min-h-screen py-12">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6">
+    <div className="hero-glow" style={{ minHeight: "100vh", padding: "48px 0" }}>
+      <div style={{ maxWidth: 680, margin: "0 auto", padding: "0 24px" }}>
+
         {/* Header */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 shadow-lg mb-4">
-            <FileSearch size={26} className="text-white" aria-hidden="true" />
+        <div style={{ textAlign: "center", marginBottom: 36 }}>
+          <div style={{
+            width: 60, height: 60, borderRadius: 18, margin: "0 auto 16px",
+            background: "linear-gradient(135deg, #3b82f6, #06b6d4)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 6px 24px rgba(59,130,246,0.3)",
+          }}>
+            <FileSearch size={26} color="#fff" aria-hidden="true" />
           </div>
-          <h1 className="text-3xl font-bold mb-2">Document Analyzer</h1>
-          <p className="text-slate-400 max-w-lg mx-auto">
+          <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em", marginBottom: 8 }}>
+            Document Analyzer
+          </h1>
+          <p style={{ fontSize: 14, color: "var(--text-secondary)", maxWidth: 440, margin: "0 auto", lineHeight: 1.65 }}>
             Upload any legal document and get a plain-English breakdown with risk flags, key clauses, and an action checklist.
           </p>
         </div>
 
-        {/* Upload */}
+        {/* Upload panel */}
         {status !== "success" && (
-          <div className="glass rounded-2xl p-6 mb-6">
+          <div className="card" style={{ padding: 24, marginBottom: 16 }}>
             {!hasDocument ? (
               <DocumentUploader
                 id="doc-upload"
-                label="Upload your legal document"
+                label="Your legal document"
                 onFile={handleFile}
                 onText={handleText}
               />
             ) : (
-              <div className="space-y-4">
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 {file ? (
                   <DocumentUploader
                     id="doc-upload"
@@ -102,37 +87,27 @@ export default function AnalyzePage() {
                     onClear={handleClear}
                   />
                 ) : (
-                  <div className="glass rounded-xl p-4 flex items-center justify-between">
+                  <div className="card" style={{ padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     <div>
-                      <p className="text-sm font-medium text-slate-200">Sample NDA loaded</p>
-                      <p className="text-xs text-slate-500">Ready to analyze</p>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>Sample NDA loaded</p>
+                      <p style={{ fontSize: 12, color: "var(--text-muted)" }}>Ready to analyze</p>
                     </div>
-                    <button
-                      onClick={handleClear}
-                      className="text-xs text-slate-400 hover:text-slate-200"
-                      aria-label="Clear document"
-                    >
+                    <button onClick={handleClear} className="btn-ghost" style={{ fontSize: 12 }} aria-label="Clear document">
                       Clear
                     </button>
                   </div>
                 )}
-
                 <button
                   onClick={analyze}
                   disabled={status === "loading"}
-                  className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white font-semibold flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-100"
+                  className="btn-primary"
+                  style={{ width: "100%", justifyContent: "center", padding: "12px 20px", fontSize: 15 }}
                   aria-busy={status === "loading"}
                 >
                   {status === "loading" ? (
-                    <>
-                      <Loader2 size={18} className="spinner" aria-hidden="true" />
-                      Analyzing document…
-                    </>
+                    <><Loader2 size={17} className="spinner" aria-hidden="true" /> Analyzing document…</>
                   ) : (
-                    <>
-                      <FileSearch size={18} aria-hidden="true" />
-                      Analyze Document
-                    </>
+                    <><FileSearch size={17} aria-hidden="true" /> Analyze Document</>
                   )}
                 </button>
               </div>
@@ -142,18 +117,16 @@ export default function AnalyzePage() {
 
         {/* Error */}
         {status === "error" && error && (
-          <div
-            className="glass rounded-xl p-4 flex gap-3 items-start mb-6 border-red-800/40 bg-red-950/10"
-            role="alert"
-          >
-            <AlertCircle size={18} className="text-red-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
+          <div className="card" style={{
+            padding: "14px 16px", marginBottom: 16,
+            background: "rgba(248,113,113,0.06)", border: "1px solid rgba(248,113,113,0.2)",
+            display: "flex", gap: 12, alignItems: "flex-start"
+          }} role="alert">
+            <AlertCircle size={17} style={{ color: "#f87171", flexShrink: 0, marginTop: 1 }} aria-hidden="true" />
             <div>
-              <p className="text-sm font-medium text-red-400">Analysis failed</p>
-              <p className="text-xs text-red-300/80 mt-1">{error}</p>
-              <button
-                onClick={handleClear}
-                className="text-xs text-slate-400 hover:text-slate-200 mt-2 underline"
-              >
+              <p style={{ fontSize: 13, fontWeight: 600, color: "#f87171" }}>Analysis failed</p>
+              <p style={{ fontSize: 12, color: "#fca5a5", marginTop: 4 }}>{error}</p>
+              <button onClick={handleClear} className="btn-ghost" style={{ fontSize: 12, marginTop: 8, padding: "2px 0" }}>
                 Try again
               </button>
             </div>
@@ -163,21 +136,18 @@ export default function AnalyzePage() {
         {/* Results */}
         {status === "success" && analysis && (
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-sm text-emerald-400 font-medium">✅ Analysis complete</p>
-              <button
-                onClick={handleClear}
-                className="text-xs text-slate-400 hover:text-slate-200 underline"
-              >
-                Analyze another document
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: "#34d399" }}>✅ Analysis complete</p>
+              <button onClick={handleClear} className="btn-ghost" style={{ fontSize: 12 }}>
+                Analyze another
               </button>
             </div>
-            <AnalysisResult analysis={analysis as AnalysisData} />
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            <AnalysisResult analysis={analysis as any} />
           </div>
         )}
 
-        {/* Disclaimer */}
-        <p className="text-center text-xs text-slate-600 mt-8">
+        <p style={{ textAlign: "center", fontSize: 11, color: "var(--text-muted)", marginTop: 32 }}>
           LexAI provides legal information only — not legal advice. Always consult a qualified attorney.
         </p>
       </div>

@@ -6,9 +6,9 @@ import { Scale, FileSearch, GitCompare, MessageSquare, Menu, X } from "lucide-re
 import { useState } from "react";
 
 const nav = [
-  { href: "/analyze", label: "Analyze", icon: FileSearch },
-  { href: "/compare", label: "Compare", icon: GitCompare },
-  { href: "/qa",      label: "Ask LexAI",    icon: MessageSquare },
+  { href: "/analyze", label: "Analyze",   icon: FileSearch  },
+  { href: "/compare", label: "Compare",   icon: GitCompare  },
+  { href: "/qa",      label: "Ask LexAI", icon: MessageSquare },
 ];
 
 export default function NavBar() {
@@ -16,41 +16,52 @@ export default function NavBar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-800/60 glass" role="banner">
+    <header style={{
+      position: "sticky", top: 0, zIndex: 50,
+      borderBottom: "1px solid var(--border)",
+      background: "rgba(7,9,15,0.85)",
+      backdropFilter: "blur(14px)",
+      WebkitBackdropFilter: "blur(14px)",
+    }} role="banner">
       <nav
-        className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between"
+        style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between" }}
         aria-label="Main navigation"
       >
         {/* Logo */}
-        <Link
-          href="/"
-          className="flex items-center gap-2.5 group"
-          aria-label="LexAI Home"
-        >
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-            <Scale className="w-4.5 h-4.5 text-white" size={18} aria-hidden="true" />
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }} aria-label="LexAI Home">
+          <div style={{
+            width: 30, height: 30, borderRadius: 9,
+            background: "linear-gradient(135deg, #3b82f6, #7c3aed)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 2px 10px rgba(59,130,246,0.3)",
+          }}>
+            <Scale size={15} color="#fff" aria-hidden="true" />
           </div>
-          <span className="font-bold text-lg tracking-tight">
+          <span style={{ fontWeight: 800, fontSize: 17, letterSpacing: "-0.02em" }}>
             Lex<span className="gradient-text">AI</span>
           </span>
         </Link>
 
         {/* Desktop nav */}
-        <ul className="hidden sm:flex items-center gap-1" role="list">
+        <ul style={{ display: "flex", alignItems: "center", gap: 2, listStyle: "none", margin: 0, padding: 0 }} className="hidden-mobile">
           {nav.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || pathname.startsWith(href + "/");
             return (
               <li key={href}>
                 <Link
                   href={href}
-                  className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    active
-                      ? "bg-blue-600/15 text-blue-400"
-                      : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
-                  }`}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 6,
+                    padding: "6px 14px", borderRadius: 8,
+                    fontSize: 13, fontWeight: 600, textDecoration: "none",
+                    transition: "all 0.15s",
+                    ...(active
+                      ? { background: "rgba(59,130,246,0.12)", color: "#60a5fa" }
+                      : { color: "var(--text-secondary)", background: "transparent" }),
+                  }}
                   aria-current={active ? "page" : undefined}
                 >
-                  <Icon size={15} aria-hidden="true" />
+                  <Icon size={14} aria-hidden="true" />
                   {label}
                 </Link>
               </li>
@@ -58,9 +69,10 @@ export default function NavBar() {
           })}
         </ul>
 
-        {/* Mobile menu toggle */}
+        {/* Mobile toggle */}
         <button
-          className="sm:hidden p-2 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800"
+          style={{ padding: 8, borderRadius: 8, background: "none", border: "none", color: "var(--text-secondary)", cursor: "pointer" }}
+          className="show-mobile"
           onClick={() => setOpen(!open)}
           aria-expanded={open}
           aria-controls="mobile-menu"
@@ -70,10 +82,10 @@ export default function NavBar() {
         </button>
       </nav>
 
-      {/* Mobile nav */}
+      {/* Mobile menu */}
       {open && (
-        <div id="mobile-menu" className="sm:hidden border-t border-slate-800/60 px-4 pb-4">
-          <ul className="flex flex-col gap-1 mt-3" role="list">
+        <div id="mobile-menu" style={{ borderTop: "1px solid var(--border)", padding: "12px 20px 16px" }}>
+          <ul style={{ display: "flex", flexDirection: "column", gap: 4, listStyle: "none", margin: 0, padding: 0 }}>
             {nav.map(({ href, label, icon: Icon }) => {
               const active = pathname === href;
               return (
@@ -81,11 +93,14 @@ export default function NavBar() {
                   <Link
                     href={href}
                     onClick={() => setOpen(false)}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium ${
-                      active
-                        ? "bg-blue-600/15 text-blue-400"
-                        : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
-                    }`}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 10,
+                      padding: "10px 12px", borderRadius: 9,
+                      fontSize: 14, fontWeight: 600, textDecoration: "none",
+                      ...(active
+                        ? { background: "rgba(59,130,246,0.12)", color: "#60a5fa" }
+                        : { color: "var(--text-secondary)" }),
+                    }}
                     aria-current={active ? "page" : undefined}
                   >
                     <Icon size={16} aria-hidden="true" />
@@ -97,6 +112,11 @@ export default function NavBar() {
           </ul>
         </div>
       )}
+
+      <style>{`
+        @media (min-width: 640px) { .show-mobile { display: none !important; } }
+        @media (max-width: 639px) { .hidden-mobile { display: none !important; } }
+      `}</style>
     </header>
   );
 }

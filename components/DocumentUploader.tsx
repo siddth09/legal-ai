@@ -40,88 +40,78 @@ This Agreement shall be governed by the laws of the State of Delaware.
 This Agreement constitutes the entire agreement between the parties with respect to the subject matter hereof.`;
 
 export default function DocumentUploader({
-  label,
-  id,
-  onFile,
-  onText,
-  currentFile,
-  onClear,
-  accept = ".pdf,.txt,.md",
-  disabled = false,
+  label, id, onFile, onText, currentFile, onClear,
+  accept = ".pdf,.txt,.md", disabled = false,
 }: DocumentUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const validate = useCallback((file: File): string | null => {
-    const maxMB = 5;
-    if (file.size > maxMB * 1024 * 1024) return `File too large (max ${maxMB}MB)`;
+    if (file.size > 5 * 1024 * 1024) return "File too large (max 5 MB)";
     const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
     if (!["pdf", "txt", "md"].includes(ext)) return "Only PDF, TXT, or MD files are supported";
     return null;
   }, []);
 
-  const handleFile = useCallback(
-    (file: File) => {
-      setError(null);
-      const err = validate(file);
-      if (err) { setError(err); return; }
-      onFile(file);
-    },
-    [onFile, validate]
-  );
+  const handleFile = useCallback((file: File) => {
+    setError(null);
+    const err = validate(file);
+    if (err) { setError(err); return; }
+    onFile(file);
+  }, [onFile, validate]);
 
-  const onDrop = useCallback(
-    (e: DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      setDragging(false);
-      const file = e.dataTransfer.files?.[0];
-      if (file) handleFile(file);
-    },
-    [handleFile]
-  );
+  const onDrop = useCallback((e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleFile(file);
+  }, [handleFile]);
 
-  const onChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) handleFile(file);
-      e.target.value = "";
-    },
-    [handleFile]
-  );
+  const onChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleFile(file);
+    e.target.value = "";
+  }, [handleFile]);
 
-  const loadSample = () => {
-    if (onText) {
-      onText(SAMPLE_NDA);
-    }
-  };
-
+  /* ── File loaded state ── */
   if (currentFile) {
     return (
-      <div className="glass rounded-xl p-4 flex items-center gap-3" role="status" aria-label={`File loaded: ${currentFile.name}`}>
-        <div className="w-10 h-10 rounded-lg bg-blue-600/20 border border-blue-600/30 flex items-center justify-center flex-shrink-0">
-          <FileText size={18} className="text-blue-400" aria-hidden="true" />
+      <div className="card" style={{ padding: "12px 14px", display: "flex", alignItems: "center", gap: 12 }}
+        role="status" aria-label={`File loaded: ${currentFile.name}`}>
+        <div style={{
+          width: 38, height: 38, borderRadius: 10, flexShrink: 0,
+          background: "rgba(59,130,246,0.12)", border: "1px solid rgba(59,130,246,0.2)",
+          display: "flex", alignItems: "center", justifyContent: "center"
+        }}>
+          <FileText size={17} style={{ color: "#60a5fa" }} aria-hidden="true" />
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-slate-200 truncate">{currentFile.name}</p>
-          <p className="text-xs text-slate-500">{(currentFile.size / 1024).toFixed(1)} KB</p>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {currentFile.name}
+          </p>
+          <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
+            {(currentFile.size / 1024).toFixed(1)} KB
+          </p>
         </div>
         {onClear && (
           <button
             onClick={onClear}
-            className="p-1.5 rounded-lg hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors"
+            className="btn-ghost"
+            style={{ padding: "6px", borderRadius: 8 }}
             aria-label={`Remove ${currentFile.name}`}
           >
-            <X size={16} aria-hidden="true" />
+            <X size={15} aria-hidden="true" />
           </button>
         )}
       </div>
     );
   }
 
+  /* ── Upload zone ── */
   return (
     <div>
-      <label htmlFor={id} className="block text-sm font-medium text-slate-300 mb-2">
+      <label htmlFor={id} style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 8 }}>
         {label}
       </label>
       <div
@@ -129,9 +119,12 @@ export default function DocumentUploader({
         tabIndex={disabled ? -1 : 0}
         aria-label={`Upload area for ${label}. Drag and drop a file or click to browse.`}
         aria-disabled={disabled}
-        className={`upload-zone border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all
-          ${dragging ? "border-blue-500 bg-blue-500/10" : "border-slate-700 hover:border-slate-500 hover:bg-slate-800/40"}
-          ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+        className="upload-zone"
+        style={{
+          opacity: disabled ? 0.5 : 1,
+          cursor: disabled ? "not-allowed" : "pointer",
+          ...(dragging && { borderColor: "rgba(59,130,246,0.5)", background: "rgba(59,130,246,0.06)" }),
+        }}
         onClick={() => !disabled && inputRef.current?.click()}
         onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") inputRef.current?.click(); }}
         onDragOver={(e) => { e.preventDefault(); if (!disabled) setDragging(true); }}
@@ -148,17 +141,27 @@ export default function DocumentUploader({
           disabled={disabled}
           aria-label={`File input for ${label}`}
         />
-        <Upload size={28} className="text-slate-500 mx-auto mb-3" aria-hidden="true" />
-        <p className="text-sm font-medium text-slate-300">
+        <div style={{
+          width: 40, height: 40, borderRadius: 10, margin: "0 auto 12px",
+          background: "rgba(255,255,255,0.05)", border: "1px solid var(--border)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          <Upload size={18} style={{ color: "var(--text-muted)" }} aria-hidden="true" />
+        </div>
+        <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", marginBottom: 4 }}>
           {dragging ? "Drop it here!" : "Drag & drop or click to upload"}
         </p>
-        <p className="text-xs text-slate-500 mt-1">PDF, TXT, or MD · Max 5MB</p>
+        <p style={{ fontSize: 12, color: "var(--text-muted)" }}>PDF, TXT, or MD · Max 5 MB</p>
 
         {onText && (
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); loadSample(); }}
-            className="mt-4 text-xs text-blue-400 hover:text-blue-300 underline underline-offset-2"
+            onClick={(e) => { e.stopPropagation(); onText(SAMPLE_NDA); }}
+            style={{
+              marginTop: 14, fontSize: 12, color: "#60a5fa",
+              background: "none", border: "none", cursor: "pointer",
+              textDecoration: "underline", textUnderlineOffset: 3,
+            }}
             aria-label="Load sample NDA document for demonstration"
           >
             or load sample NDA
@@ -167,7 +170,7 @@ export default function DocumentUploader({
       </div>
 
       {error && (
-        <div className="mt-2 flex items-center gap-1.5 text-red-400 text-xs" role="alert">
+        <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#f87171" }} role="alert">
           <AlertCircle size={13} aria-hidden="true" />
           {error}
         </div>
