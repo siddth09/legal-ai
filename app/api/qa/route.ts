@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getModel, QA_PROMPT } from "@/lib/gemini";
+import { getModel, withRetry, QA_PROMPT } from "@/lib/gemini";
 import { checkRateLimit } from "@/lib/utils";
 
 export const maxDuration = 60;
@@ -29,7 +29,9 @@ export async function POST(req: NextRequest) {
     const sanitizedQuestion = question.replace(/[<>]/g, "").trim();
 
     const model = getModel();
-    const result = await model.generateContent(QA_PROMPT(documentText, sanitizedQuestion));
+    const result = await withRetry(() =>
+      model.generateContent(QA_PROMPT(documentText, sanitizedQuestion))
+    );
     const responseText = result.response.text();
 
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);

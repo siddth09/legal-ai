@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getModel, ANALYZE_PROMPT, DETECT_DOC_TYPE } from "@/lib/gemini";
+import { getModel, withRetry, ANALYZE_PROMPT, DETECT_DOC_TYPE } from "@/lib/gemini";
 import { truncateText, validateFileSize, validateFileType } from "@/lib/pdf-parser";
 import { checkRateLimit } from "@/lib/utils";
 
@@ -39,7 +39,9 @@ export async function POST(req: NextRequest) {
     const docType = DETECT_DOC_TYPE(truncated);
 
     const model = getModel();
-    const result = await model.generateContent(ANALYZE_PROMPT(docType, truncated));
+    const result = await withRetry(() =>
+      model.generateContent(ANALYZE_PROMPT(docType, truncated))
+    );
     const responseText = result.response.text();
 
     // Parse JSON from response (Gemini sometimes wraps in markdown)

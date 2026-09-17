@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getModel, COMPARE_PROMPT } from "@/lib/gemini";
+import { getModel, withRetry, COMPARE_PROMPT } from "@/lib/gemini";
 import { truncateText, validateFileSize, validateFileType } from "@/lib/pdf-parser";
 import { checkRateLimit } from "@/lib/utils";
 
@@ -44,8 +44,10 @@ export async function POST(req: NextRequest) {
     }
 
     const model = getModel();
-    const result = await model.generateContent(
-      COMPARE_PROMPT(truncateText(docTextA, 15000), truncateText(docTextB, 15000))
+    const result = await withRetry(() =>
+      model.generateContent(
+        COMPARE_PROMPT(truncateText(docTextA, 15000), truncateText(docTextB, 15000))
+      )
     );
     const responseText = result.response.text();
 

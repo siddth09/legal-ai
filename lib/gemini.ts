@@ -13,7 +13,29 @@ export const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
 
 export function getModel() {
   if (!genAI) throw new Error("GEMINI_API_KEY is not configured.");
-  return genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  return genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+}
+
+/** Retry a Gemini call up to `attempts` times with exponential backoff on overload (503). */
+export async function withRetry<T>(
+  fn: () => Promise<T>,
+  attempts = 3,
+  delayMs = 1500
+): Promise<T> {
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fn();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      const isOverload = msg.includes("503") || msg.toLowerCase().includes("overload");
+      if (isOverload && i < attempts - 1) {
+        await new Promise((r) => setTimeout(r, delayMs * Math.pow(2, i)));
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw new Error("Max retries exceeded");
 }
 
 // ─── Prompt Templates ────────────────────────────────────────────────────────
