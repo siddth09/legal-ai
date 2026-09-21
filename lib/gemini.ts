@@ -13,7 +13,7 @@ export const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
 
 export function getModel() {
   if (!genAI) throw new Error("GEMINI_API_KEY is not configured.");
-  return genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+  return genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
 }
 
 /** Retry a Gemini call up to `attempts` times with exponential backoff on overload (503). */

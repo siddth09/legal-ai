@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { Loader2, FileSearch, AlertCircle } from "lucide-react";
 import DocumentUploader from "@/components/DocumentUploader";
 import AnalysisResult from "@/components/AnalysisResult";
+import type { AnalysisData } from "@/lib/types";
 
 type Status = "idle" | "loading" | "success" | "error";
 
@@ -11,7 +12,7 @@ export default function AnalyzePage() {
   const [file,     setFile]     = useState<File | null>(null);
   const [rawText,  setRawText]  = useState<string | null>(null);
   const [status,   setStatus]   = useState<Status>("idle");
-  const [analysis, setAnalysis] = useState<unknown>(null);
+  const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
   const [error,    setError]    = useState<string | null>(null);
 
   const handleFile = useCallback((f: File) => {
@@ -142,8 +143,7 @@ export default function AnalyzePage() {
                 Analyze another
               </button>
             </div>
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            <AnalysisResult analysis={analysis as any} />
+            <AnalysisResult analysis={analysis} />
           </div>
         )}
 

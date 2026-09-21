@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Loader2, GitCompare, AlertCircle } from "lucide-react";
 import DocumentUploader from "@/components/DocumentUploader";
 import CompareView from "@/components/CompareView";
+import type { ComparisonData } from "@/lib/types";
 
 type Status = "idle" | "loading" | "success" | "error";
 
@@ -11,7 +12,7 @@ export default function ComparePage() {
   const [fileA,      setFileA]      = useState<File | null>(null);
   const [fileB,      setFileB]      = useState<File | null>(null);
   const [status,     setStatus]     = useState<Status>("idle");
-  const [comparison, setComparison] = useState<unknown>(null);
+  const [comparison, setComparison] = useState<ComparisonData | null>(null);
   const [error,      setError]      = useState<string | null>(null);
 
   const clearAll = () => { setFileA(null); setFileB(null); setStatus("idle"); setComparison(null); setError(null); };
@@ -127,8 +128,7 @@ export default function ComparePage() {
               </button>
             </div>
             <CompareView
-              /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-              comparison={comparison as any}
+              comparison={comparison}
               nameA={fileA?.name ?? "Document A"}
               nameB={fileB?.name ?? "Document B"}
             />

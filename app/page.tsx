@@ -66,9 +66,10 @@ export default function HomePage() {
           <span className="gradient-text">Document in Seconds</span>
         </h1>
 
-        <p style={{ fontSize: 17, color: "var(--text-secondary)", maxWidth: 500, margin: "0 auto 36px", lineHeight: 1.7 }}>
-          LexAI uses AI to decode contracts, flag risks, compare agreements, and help you
-          ask the right questions — so you&apos;re never lost in legal language again.
+        <p style={{ fontSize: 17, color: "var(--text-secondary)", maxWidth: 520, margin: "0 auto 36px", lineHeight: 1.7 }}>
+          LexAI uses <strong style={{ color: "var(--text-primary)" }}>Gemini AI</strong> to decode contracts, flag risks,
+          generate summaries &amp; checklists, compare agreements, and help you ask the right questions —
+          so you&apos;re never lost in legal language again.
         </p>
 
         <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginBottom: 52 }}>

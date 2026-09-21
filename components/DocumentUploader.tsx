@@ -109,6 +109,8 @@ export default function DocumentUploader({
   }
 
   /* ── Upload zone ── */
+  const hintId = `${id}-hint`;
+  const errorId = `${id}-error`;
   return (
     <div>
       <label htmlFor={id} style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 8 }}>
@@ -119,6 +121,7 @@ export default function DocumentUploader({
         tabIndex={disabled ? -1 : 0}
         aria-label={`Upload area for ${label}. Drag and drop a file or click to browse.`}
         aria-disabled={disabled}
+        aria-describedby={error ? `${hintId} ${errorId}` : hintId}
         className="upload-zone"
         style={{
           opacity: disabled ? 0.5 : 1,
@@ -140,6 +143,8 @@ export default function DocumentUploader({
           onChange={onChange}
           disabled={disabled}
           aria-label={`File input for ${label}`}
+          aria-invalid={!!error}
+          aria-describedby={error ? errorId : hintId}
         />
         <div style={{
           width: 40, height: 40, borderRadius: 10, margin: "0 auto 12px",
@@ -151,7 +156,7 @@ export default function DocumentUploader({
         <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", marginBottom: 4 }}>
           {dragging ? "Drop it here!" : "Drag & drop or click to upload"}
         </p>
-        <p style={{ fontSize: 12, color: "var(--text-muted)" }}>PDF, TXT, or MD · Max 5 MB</p>
+        <p id={hintId} style={{ fontSize: 12, color: "var(--text-muted)" }}>PDF, TXT, or MD · Max 5 MB</p>
 
         {onText && (
           <button
@@ -170,7 +175,12 @@ export default function DocumentUploader({
       </div>
 
       {error && (
-        <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#f87171" }} role="alert">
+        <div
+          id={errorId}
+          style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#f87171" }}
+          role="alert"
+          aria-live="assertive"
+        >
           <AlertCircle size={13} aria-hidden="true" />
           {error}
         </div>

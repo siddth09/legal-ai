@@ -70,3 +70,17 @@ export function checkRateLimit(ip: string): boolean {
   entry.count++;
   return true;
 }
+
+/**
+ * Strip HTML tags and normalise whitespace to prevent XSS via injected content.
+ * Use on all user-supplied strings before passing to the AI prompt.
+ */
+export function sanitizeInput(input: string): string {
+  return input
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "") // strip script blocks + content
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")   // strip style blocks + content
+    .replace(/<[^>]*>/g, "")                           // strip remaining HTML tags
+    .replace(/&[a-z]+;/gi, " ")                       // decode common HTML entities to spaces
+    .replace(/[\x00-\x08\x0B-\x1F]/g, "")             // strip non-printable control chars
+    .trim();
+}

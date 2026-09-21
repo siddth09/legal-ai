@@ -1,28 +1,12 @@
 "use client";
 
+import { useMemo, memo } from "react";
 import { changeTypeColor, significanceLabel } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
-
-interface Change {
-  type: "added" | "removed" | "modified";
-  section: string;
-  documentA: string | null;
-  documentB: string | null;
-  plainEnglish: string;
-  significance: "high" | "medium" | "low";
-  favoredParty: "A" | "B" | "neutral";
-}
-
-interface ComparisonData {
-  summary: string;
-  overallRisk: "higher" | "lower" | "similar";
-  overallRiskExplanation: string;
-  changes: Change[];
-  recommendations: string[];
-}
+import type { ComparisonData } from "@/lib/types";
 
 interface CompareViewProps {
-  comparison: ComparisonData;
+  comparison: ComparisonData | null;
   nameA?: string;
   nameB?: string;
 }
@@ -33,13 +17,19 @@ const riskStyle = {
   similar: { bg: "rgba(148,163,184,0.07)", border: "rgba(148,163,184,0.15)", color: "#94a3b8", icon: "ℹ️" },
 };
 
-export default function CompareView({ comparison, nameA = "Document A", nameB = "Document B" }: CompareViewProps) {
-  const high     = comparison.changes.filter((c) => c.significance === "high").length;
-  const medium   = comparison.changes.filter((c) => c.significance === "medium").length;
-  const added    = comparison.changes.filter((c) => c.type === "added").length;
-  const removed  = comparison.changes.filter((c) => c.type === "removed").length;
-  const modified = comparison.changes.filter((c) => c.type === "modified").length;
+function CompareViewInner({ comparison, nameA = "Document A", nameB = "Document B" }: CompareViewProps) {
+  // useMemo must be called unconditionally (before any early returns)
+  const stats = useMemo(() => ({
+    high:     (comparison?.changes ?? []).filter((c) => c.significance === "high").length,
+    medium:   (comparison?.changes ?? []).filter((c) => c.significance === "medium").length,
+    added:    (comparison?.changes ?? []).filter((c) => c.type === "added").length,
+    removed:  (comparison?.changes ?? []).filter((c) => c.type === "removed").length,
+    modified: (comparison?.changes ?? []).filter((c) => c.type === "modified").length,
+  }), [comparison?.changes]);
 
+  if (!comparison) return null;
+
+  const { high, medium, added, removed, modified } = stats;
   const rs = riskStyle[comparison.overallRisk];
 
   return (
@@ -164,3 +154,5 @@ export default function CompareView({ comparison, nameA = "Document A", nameB = 
     </div>
   );
 }
+
+export default memo(CompareViewInner);

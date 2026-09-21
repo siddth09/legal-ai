@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Scale, FileSearch, GitCompare, MessageSquare, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const nav = [
   { href: "/analyze", label: "Analyze",   icon: FileSearch  },
@@ -14,6 +14,16 @@ const nav = [
 export default function NavBar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+
+  // Close mobile menu on Escape key
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [open]);
 
   return (
     <header style={{

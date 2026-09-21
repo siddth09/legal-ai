@@ -24,20 +24,23 @@ describe("RiskBadge", () => {
     expect(screen.getByRole("img", { name: /risk level: neutral/i })).toBeInTheDocument();
   });
 
-  it("applies correct color classes for high risk", () => {
+  it("uses red color for high risk (inline style)", () => {
     const { container } = render(<RiskBadge risk="high" />);
-    expect(container.firstChild).toHaveClass("text-red-400");
+    const el = container.firstChild as HTMLElement;
+    // Component uses inline styles — check for red color value
+    expect(el.style.color).toBe("rgb(248, 113, 113)");
   });
 
-  it("applies correct color classes for low risk", () => {
+  it("uses green color for low risk (inline style)", () => {
     const { container } = render(<RiskBadge risk="low" />);
-    expect(container.firstChild).toHaveClass("text-emerald-400");
+    const el = container.firstChild as HTMLElement;
+    expect(el.style.color).toBe("rgb(52, 211, 153)");
   });
 
   it("hides icon when showIcon=false", () => {
     render(<RiskBadge risk="high" showIcon={false} />);
     // Emoji should not be present (showIcon=false)
     const badge = screen.getByRole("img");
-    expect(badge.textContent).not.toContain("⚠️");
+    expect(badge.textContent).not.toContain("⚠");
   });
 });
