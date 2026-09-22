@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, lazy, Suspense } from "react";
 import { Loader2, FileSearch, AlertCircle } from "lucide-react";
 import DocumentUploader from "@/components/DocumentUploader";
-import AnalysisResult from "@/components/AnalysisResult";
 import type { AnalysisData } from "@/lib/types";
+
+// Lazy-load the heavy result component — it's only needed after analysis completes
+const AnalysisResult = lazy(() => import("@/components/AnalysisResult"));
 
 type Status = "idle" | "loading" | "success" | "error";
 
@@ -143,7 +145,9 @@ export default function AnalyzePage() {
                 Analyze another
               </button>
             </div>
-            <AnalysisResult analysis={analysis} />
+            <Suspense fallback={<div style={{ textAlign: "center", padding: 32, color: "var(--text-muted)" }}>Loading results…</div>}>
+              <AnalysisResult analysis={analysis} />
+            </Suspense>
           </div>
         )}
 

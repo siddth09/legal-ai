@@ -103,15 +103,61 @@ Open [http://localhost:3000](http://localhost:3000) to see LexAI.
 
 ---
 
+## 🏗️ Architecture
+
+```
+legal-ai/
+├── app/
+│   ├── api/
+│   │   ├── analyze/route.ts   # POST — document analysis endpoint
+│   │   ├── compare/route.ts   # POST — contract comparison endpoint
+│   │   └── qa/route.ts        # POST — document Q&A endpoint
+│   ├── analyze/               # Document Analyzer page + error/loading UI
+│   ├── compare/               # Contract Comparator page + error/loading UI
+│   ├── qa/                    # Ask LexAI page + error/loading UI
+│   ├── error.tsx              # Route-level error boundary
+│   ├── global-error.tsx       # Root error boundary
+│   ├── layout.tsx             # Root layout (Inter font, skip-nav, metadata)
+│   └── page.tsx               # Landing page
+├── components/
+│   ├── AnalysisResult.tsx     # Tabbed analysis display (React.memo + useMemo)
+│   ├── ChatInterface.tsx      # Document Q&A chat (useCallback, optimistic UI)
+│   ├── CompareView.tsx        # Contract diff view (React.memo + useMemo)
+│   ├── DocumentUploader.tsx   # Drag-drop + file picker with full ARIA support
+│   ├── NavBar.tsx             # Sticky nav with keyboard-accessible mobile menu
+│   └── RiskBadge.tsx          # Accessible risk level badge
+├── lib/
+│   ├── gemini.ts              # Gemini client, retry logic, prompt templates
+│   ├── pdf-parser.ts          # Server-side PDF/text extraction + validation
+│   ├── types.ts               # Shared TypeScript interfaces (no `as any`)
+│   ├── utils.ts               # Pure utility helpers (JSDoc, fully tested)
+│   └── validators.ts          # Centralised request validation (discriminated unions)
+├── __tests__/
+│   ├── components/            # ChatInterface, CompareView, DocumentUploader, RiskBadge
+│   └── lib/                   # gemini, pdf-parser, utils, validators
+└── middleware.ts              # Edge middleware — method guard + security headers
+```
+
+**Data flow:**
+1. User uploads a document via `DocumentUploader`
+2. Page component sends a `FormData` POST to the appropriate API route
+3. The API route validates input via `lib/validators.ts`, calls Gemini with a structured prompt, and parses the JSON response
+4. The structured result is passed back and rendered by the appropriate result component
+
+---
+
 ## 🛡️ Security
 
 - **API key** stored only in `.env.local` — never committed (`.gitignore` enforced)
-- **Input validation** — file type, size limits (5MB max), question length limits
-- **Rate limiting** — 20 requests/minute per IP address
-- **Input sanitization** — HTML chars stripped from user inputs
-- **Content Security Policy** — strict CSP headers via `next.config.js`
-- **Security headers** — X-Frame-Options, X-Content-Type-Options, XSS Protection
-- **Stateless** — no user data stored server-side
+- **Centralised validation** — all inputs run through `lib/validators.ts` discriminated-union validators before reaching the AI model
+- **Input sanitization** — `sanitizeInput()` strips `<script>` / `<style>` blocks, HTML tags, HTML entities, and control characters from all user text
+- **Rate limiting** — 20 requests per minute per IP address (server-side in-memory)
+- **Edge middleware** — `middleware.ts` enforces API method guards (405) and injects `X-Request-ID` tracing headers at the CDN edge before requests hit the origin
+- **Content Security Policy** — strict CSP via `next.config.js` with `unsafe-eval` removed
+- **Security headers** — HSTS, X-Frame-Options (DENY), X-Content-Type-Options (nosniff), Cross-Origin-Opener-Policy, Cross-Origin-Resource-Policy, COEP
+- **Error sanitization** — API routes detect stack traces and replace them with generic messages; internal error details never leak to the client
+- **Stateless** — no user data or documents stored server-side
+- **Cache-Control: no-store** — all AI responses are marked non-cacheable to prevent sensitive legal data being stored in caches
 
 ---
 
@@ -124,28 +170,38 @@ npm test
 # Run with coverage report
 npm run test:coverage
 
-# Type checking
+# Type checking (zero errors)
 npm run type-check
 
-# Linting
+# Linting (zero errors)
 npm run lint
 ```
 
-Tests cover:
-- `lib/gemini.ts` — document type detection, prompt template correctness
-- `lib/utils.ts` — color helpers, rate limiter logic  
-- `components/RiskBadge.tsx` — rendering, accessibility, color application
+**86 tests across 8 test suites** — all passing:
+
+| Suite | Coverage |
+|---|---|
+| `lib/utils.test.ts` | `checkRateLimit`, `sanitizeInput`, risk helpers |
+| `lib/validators.test.ts` | `validateQABody`, `validateTextField` — all branches |
+| `lib/pdf-parser.test.ts` | `truncateText` boundaries, `validateFileSize`, `validateFileType` |
+| `lib/gemini.test.ts` | `DETECT_DOC_TYPE`, prompt template structure |
+| `components/RiskBadge.test.tsx` | Rendering, ARIA, inline style colours |
+| `components/CompareView.test.tsx` | Stats, changes, recommendations, ARIA |
+| `components/DocumentUploader.test.tsx` | Upload, validation, keyboard, ARIA |
+| `components/ChatInterface.test.tsx` | Message flow, API success/error, UI state |
 
 ---
 
 ## ♿ Accessibility
 
+- **Skip navigation** link (`#main-content`) for keyboard and screen-reader users
 - All interactive elements have descriptive `aria-label` attributes
 - Navigation uses `aria-current="page"` for active links
-- File uploader supports keyboard navigation (`Enter`/`Space` to open)
+- File uploader supports keyboard navigation (`Enter`/`Space` to open), `aria-describedby` linked to hint text, `aria-invalid` + `aria-live="assertive"` on errors
 - Chat log uses `role="log"` and `aria-live="polite"`
-- Risk badges use `role="img"` with descriptive labels
-- Mobile-responsive layout with hamburger menu
+- Risk badges use `role="img"` with descriptive labels (`Risk level: High Risk`)
+- Mobile hamburger menu closes on `Escape` key press
+- Reduced-motion media query suppresses animations for users who prefer it
 - High-contrast color palette on dark background
 - Consistent `:focus-visible` outlines throughout
 
@@ -153,25 +209,27 @@ Tests cover:
 
 ## 💡 Assumptions
 
-1. Documents should be under 5MB and in PDF, TXT, or MD format
-2. PDF text extraction works on text-based PDFs (not scanned images)
-3. Analysis is based on the first ~30,000 characters of long documents
+1. Documents should be under 5 MB and in PDF, TXT, or MD format
+2. PDF text extraction works on text-based PDFs (not scanned images — OCR is out of scope)
+3. Analysis is based on the first ~30,000 characters of long documents (model context limit)
 4. The app is informational only — it explicitly does not provide legal advice
 5. A valid `GEMINI_API_KEY` environment variable must be set for AI features to work
+6. In-memory rate limiting resets on server restart; a Redis-backed store would be needed for multi-instance production deployments
 
 ---
 
 ## 🔧 Tech Stack
 
-| Technology | Purpose |
-|---|---|
-| [Next.js 14](https://nextjs.org) | Full-stack React framework (App Router) |
-| [TypeScript](https://typescriptlang.org) | Type safety |
-| [Tailwind CSS v4](https://tailwindcss.com) | Utility-first styling |
-| [Google Gemini 1.5 Flash](https://ai.google.dev) | AI analysis, comparison, Q&A |
-| [pdf-parse](https://npmjs.com/package/pdf-parse) | Server-side PDF text extraction |
-| [lucide-react](https://lucide.dev) | Icon system |
-| [Jest](https://jestjs.io) + [Testing Library](https://testing-library.com) | Unit & component testing |
+| Technology | Version | Purpose |
+|---|---|---|
+| [Next.js](https://nextjs.org) | 16 | Full-stack React framework (App Router) |
+| [TypeScript](https://typescriptlang.org) | 5 | Strict type safety (`strict: true`) |
+| [Google Gemini Flash](https://ai.google.dev) | `gemini-3.6-flash` | AI analysis, comparison, Q&A |
+| [pdf-parse](https://npmjs.com/package/pdf-parse) | 2.x | Server-side PDF text extraction |
+| [lucide-react](https://lucide.dev) | latest | Icon system |
+| [Jest](https://jestjs.io) + [Testing Library](https://testing-library.com) | 29 | Unit & component testing |
+| [uuid](https://npmjs.com/package/uuid) | 11 | Cryptographic request IDs in middleware |
+| [next/font](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) | — | Zero-CLS font loading (Inter) |
 
 ---
 
